@@ -36,8 +36,35 @@ async function createTask(req, res) {
   }
 }
 
+async function updateTask(req, res) {
+  try {
+    const id = req.params.id;
+    const propsToUpdate = Object.keys(req.body);
+    const queryPromises = propsToUpdate.map((prop) => {
+      return pool.query(`update task set ${prop} = $1 where id = $2`, [
+        req.body[prop],
+        id,
+      ]);
+    });
+    const queryResults = await Promise.allSettled(queryPromises);
+    console.log(queryResults);
+    return res.json(queryResults);
+  } catch (err) {
+    console.log(err);
+    return res.json({ error: err });
+  }
+}
+
+async function deleteTask(req, res) {
+  const id = req.params.id;
+  const result = await pool.query("delete from task where id = $1", [id]);
+  return res.json(result);
+}
+
 module.exports = {
   getAllTasks,
   getTask,
   createTask,
+  updateTask,
+  deleteTask,
 };
