@@ -1,15 +1,15 @@
 const pool = require("../db");
 
-async function getAllTasks(req, res) {
+async function getAllTasks(req, res, next) {
   try {
     const allTasks = await pool.query("select * from task");
     return res.json(allTasks.rows);
   } catch (error) {
-    return res.json({ error: error, message });
+    next(error);
   }
 }
 
-async function getTask(req, res) {
+async function getTask(req, res, next) {
   try {
     const { id } = req.params;
     const task = await pool.query("select * from task where task.id = $1", [
@@ -19,11 +19,11 @@ async function getTask(req, res) {
       return res.status(400).json({ messge: "Task not found" });
     return res.json(task.rows[0]);
   } catch (error) {
-    return res.json({ error: error.message });
+    next(error);
   }
 }
 
-async function createTask(req, res) {
+async function createTask(req, res, next) {
   try {
     const { title, description } = req.body;
     const result = await pool.query(
@@ -32,14 +32,13 @@ async function createTask(req, res) {
     );
     return res.json(result.rows[0]);
   } catch (error) {
-    console.log(error);
-    return res.json({ error: error.message });
+    next(error);
   }
 }
 
 /*
 // updates only the properties posted in the body
-async function updateTask(req, res) {
+async function updateTask(req, res, next) {
   try {
     const id = req.params.id;
     const propsToUpdate = Object.keys(req.body);
@@ -53,14 +52,13 @@ async function updateTask(req, res) {
     console.log(queryResults);
     return res.json(queryResults);
   } catch (error) {
-    console.log(error);
-    return res.json({ error: error });
+    next(error);
   }
 }
 */
 
 // updates all properties
-async function updateTask(req, res) {
+async function updateTask(req, res, next) {
   try {
     const { id } = req.params;
     const { title, description } = req.body;
@@ -72,12 +70,11 @@ async function updateTask(req, res) {
       return res.json({ message: "Task not found" });
     res.json(result.rows[0]);
   } catch (error) {
-    console.log(error);
-    res.json({ error: error.message });
+    next(error);
   }
 }
 
-async function deleteTask(req, res) {
+async function deleteTask(req, res, next) {
   try {
     const { id } = req.params;
     const result = await pool.query("delete from task where id = $1", [id]);
@@ -88,7 +85,7 @@ async function deleteTask(req, res) {
     }
     return res.sendStatus(204);
   } catch (error) {
-    return res.json({ error: error.message });
+    next(error);
   }
 }
 
